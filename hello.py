@@ -20,8 +20,8 @@ moment = Moment(app)
 @app.route('/', methods=['GET', 'POST'])
 def index():
     form = NameForm()
-    # session['name'] = None
-    # session['email'] = None
+    #session['name'] = None
+    #session['email'] = None
     
     if form.validate_on_submit():
         # configure user name
@@ -34,13 +34,22 @@ def index():
         old_email = session.get('email')
         if old_email is not None and old_email != form.email.data:
             flash('Looks like you have changed your email!')
-        session['email'] = form.email.data        
+        # session['email'] = form.email.data        
+        if 'utoronto' in form.email.data:
+            session['email'] = f"Your UofT email is { form.email.data }"
+        else:
+            session['email'] = "Please use your UofT email."
         
         return redirect(url_for('index'))
     return render_template('index.html', 
                            form=form,
                            name=session.get('name'),
                            email=session.get('email'))
+
+
+@app.route('/date')
+def date():
+    return render_template('date.html', current_time=datetime.utcnow())
 
 
 @app.route('/user/<name>')
@@ -65,7 +74,7 @@ class NameForm(FlaskForm):
     
     # function name format for custom validators: validate_<fieldname> 
     def validate_email(self, field):
-        if 'utoronto' not in field.data:
-            raise ValidationError("Please provide a UofT email address.")
-        elif '@' not in field.data:
+        if '@' not in field.data:
             raise ValidationError(f'Please include an "@" in the email address. {field.data} is missing an "@".')
+        # elif 'utoronto' not in field.data:
+        #     raise ValidationError("Please provide a UofT email address.")
